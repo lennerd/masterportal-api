@@ -1,5 +1,5 @@
 {
-  "name": "masterportalAPI",
+  "name": "masterportal-api",
   "version": "1.0.0",
   "description": "Grundfunktionen des Masterportals als API",
   "main": "src/index.js",
@@ -12,8 +12,10 @@
   "author": "Landesbetrieb Geoinformation und Vermessung Hamburg",
   "license": "MIT",
   "dependencies": {
+    "condense": "0.0.1",
     "ol": "^5.3.0",
     "proj4": "^2.5.0",
+    "tern": "^0.24.3",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
