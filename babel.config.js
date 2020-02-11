@@ -5,9 +5,9 @@
  * .babelrc does not work here since it does not affect node_modules/ol (babel.config.js does)
  */
 module.exports = {
-    "env": {
-        "test": {
-            "plugins": ["@babel/plugin-transform-modules-commonjs"]
+    env: {
+        test: {
+            plugins: ["@babel/plugin-transform-modules-commonjs"]
         }
     }
 };

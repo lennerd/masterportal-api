@@ -1,8 +1,8 @@
-import {zoomToSearchResult} from "../lib/zoomTo";
+import { zoomToSearchResult } from "../lib/zoomTo";
 
-import {parse} from "./parse";
-import {searchTypes} from "./types";
-import {searchGazetteer} from "./searchGazetteer";
+import { parse } from "./parse";
+import { searchTypes } from "./types";
+import { searchGazetteer } from "./searchGazetteer";
 
 /**
  * Chains gazetteer request and response parser.
@@ -11,7 +11,7 @@ import {searchGazetteer} from "./searchGazetteer";
  * @returns {Promise<SearchResult[]>} parsed response
  * @ignore
  */
-function searchAndParse (type, values) {
+function searchAndParse(type, values) {
     return new Promise((resolve, reject) => {
         searchGazetteer(type, values)
             .then(results => {
@@ -31,7 +31,7 @@ function searchAndParse (type, values) {
  * @returns {Promise<SearchResult[]>} parsed response
  * @ignore
  */
-function searchAndParseStreetAndHouseNumber (searchstring, searchHouseNumbers) {
+function searchAndParseStreetAndHouseNumber(searchstring, searchHouseNumbers) {
     return new Promise((resolve, reject) => {
         searchGazetteer(searchTypes.STREET, searchstring)
             .then(streetResults => parse(searchTypes.STREET, streetResults))
@@ -42,7 +42,12 @@ function searchAndParseStreetAndHouseNumber (searchstring, searchHouseNumbers) {
                     // put street in front of street's street+hnr as ordering
                     allSearches.push([parsedStreetResults[i]]);
                     if (searchHouseNumbers) {
-                        allSearches.push(searchAndParse(searchTypes.HOUSE_NUMBERS_FOR_STREET, parsedStreetResults[i].name));
+                        allSearches.push(
+                            searchAndParse(
+                                searchTypes.HOUSE_NUMBERS_FOR_STREET,
+                                parsedStreetResults[i].name
+                            )
+                        );
                     }
                 }
 
@@ -71,7 +76,7 @@ function searchAndParseStreetAndHouseNumber (searchstring, searchHouseNumbers) {
  * @param {boolean} [params.minCharacters = 3] minimum length of searchstring
  * @returns {Promise<SearchResult[]>} resolves array of search results; rejects without value if search was canceled internally
  */
-export function search (searchstring, params) {
+export function search(searchstring, params) {
     return new Promise((resolve, reject) => {
         const {
                 map,
@@ -79,7 +84,6 @@ export function search (searchstring, params) {
                 zoomToParams,
                 searchAddress = false,
                 searchStreets = false,
-                searchHouseNumbers = false,
                 searchDistricts = false,
                 searchParcels = false,
                 searchStreetKey = false,
@@ -87,39 +91,68 @@ export function search (searchstring, params) {
             } = params,
             // promises array
             searches = [];
+        let { searchHouseNumbers = false } = params;
 
         // stop search if search string too short
         if (searchstring.length < minCharacters) {
-            reject({error: "Search string too short."});
+            reject({ error: "Search string too short." });
             return;
         }
 
         // warn if zooming will not be possible
         if (zoom && !map) {
-            console.warn("Instructed to zoom, but required map object was not given. Zooming will be skipped.");
+            console.warn(
+                "Instructed to zoom, but required map object was not given. Zooming will be skipped."
+            );
         }
 
         // warn if supposed to search for house numbers, but not street - set searchHouseNumbers false for next check
         if (!searchStreets && searchHouseNumbers) {
-            console.warn(`Search for '${searchstring}' supposed to retrieve house numbers, but not streets. Invalid search configuration. House numbers will not be searched for as a result.`);
+            console.warn(
+                `Search for '${searchstring}' supposed to retrieve house numbers, but not streets. Invalid search configuration. House numbers will not be searched for as a result.`
+            );
             searchHouseNumbers = false;
         }
 
         // stop search if no search to be done
-        if (!(searchAddress || searchStreets || searchHouseNumbers || searchDistricts || searchParcels || searchStreetKey)) {
-            reject({error: `Search for '${searchstring}' received no indication what to search for. Search is canceled.`});
+        if (
+            !(
+                searchAddress ||
+                searchStreets ||
+                searchHouseNumbers ||
+                searchDistricts ||
+                searchParcels ||
+                searchStreetKey
+            )
+        ) {
+            reject({
+                error: `Search for '${searchstring}' received no indication what to search for. Search is canceled.`
+            });
             return;
         }
 
         if (searchStreets) {
-            searches.push(searchAndParseStreetAndHouseNumber(searchstring, searchHouseNumbers));
+            searches.push(
+                searchAndParseStreetAndHouseNumber(
+                    searchstring,
+                    searchHouseNumbers
+                )
+            );
         }
 
         if (searchAddress) {
             // assume pattern like "Streetname 41b", split to ["Streetname", "41", "b"]
-            const values = searchstring.split(/(\d+)/).map(s => s.trim()).filter(x => x),
+            const values = searchstring
+                    .split(/(\d+)/)
+                    .map(s => s.trim())
+                    .filter(x => x),
                 // if neither two (no affix like b) or three (with affix like b) parts found, not enough (or too many) params for method - don't search
-                type = [false, false, searchTypes.ADDRESS_UNAFFIXED, searchTypes.ADDRESS_AFFIXED][values.length];
+                type = [
+                    false,
+                    false,
+                    searchTypes.ADDRESS_UNAFFIXED,
+                    searchTypes.ADDRESS_AFFIXED
+                ][values.length];
 
             if (type) {
                 searches.push(searchAndParse(type, values));
@@ -127,12 +160,12 @@ export function search (searchstring, params) {
         }
 
         // needs pattern that looks like a name
-        if (searchDistricts && (/^[a-z-üäöß]+$/i).test(searchstring)) {
+        if (searchDistricts && /^[a-z-üäöß]+$/i.test(searchstring)) {
             searches.push(searchAndParse(searchTypes.DISTRICT, searchstring));
         }
 
         // needs pattern like "A12345"
-        if (searchStreetKey && (/^[a-z]{1}[0-9]{1,5}$/i).test(searchstring)) {
+        if (searchStreetKey && /^[a-z]{1}[0-9]{1,5}$/i.test(searchstring)) {
             searches.push(searchAndParse(searchTypes.STREET_KEY, searchstring));
         }
 
@@ -140,11 +173,11 @@ export function search (searchstring, params) {
             let values;
 
             // assume pattern like "1234/1...", "1234 1...", ...
-            if ((/^[0-9]{4}[\s|/][0-9]*$/).test(searchstring)) {
+            if (/^[0-9]{4}[\s|/][0-9]*$/.test(searchstring)) {
                 values = searchstring.split(/[\s|/]/);
             }
             // ... or "12345...", where separation is after fourth character
-            else if ((/^[0-9]{5,}$/).test(searchstring)) {
+            else if (/^[0-9]{5,}$/.test(searchstring)) {
                 values = [searchstring.slice(0, 4), searchstring.slice(4)];
             }
 
@@ -161,9 +194,10 @@ export function search (searchstring, params) {
                 if (zoom && map && flattened.length === 1) {
                     try {
                         zoomToSearchResult(map, flattened[0], zoomToParams);
-                    }
-                    catch (e) {
-                        console.error("Zooming to element from gazetteer failed.");
+                    } catch (e) {
+                        console.error(
+                            "Zooming to element from gazetteer failed."
+                        );
                         console.error(e);
                     }
                 }
