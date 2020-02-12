@@ -1,5 +1,5 @@
-import {getGazetteerUrl} from "./gazetteerUrl";
-import {searchTypes} from "./types";
+import { getGazetteerUrl } from "./gazetteerUrl";
+import { searchTypes } from "./types";
 
 // query-string snippet
 const featureQuery = "?service=WFS&request=GetFeature&version=2.0.0";
@@ -10,7 +10,7 @@ const featureQuery = "?service=WFS&request=GetFeature&version=2.0.0";
  * @returns {(string[]|string)} encoded value(s)
  * @ignore
  */
-export function encode (v) {
+export function encode(v) {
     return Array.isArray(v) ? v.map(encodeURIComponent) : encodeURIComponent(v);
 }
 
@@ -21,15 +21,22 @@ export function encode (v) {
  * @returns {string} URL query part like "&StoryQuery_ID=queryName&param=value"
  * @ignore
  */
-export function getIdQuery (key, v) {
+export function getIdQuery(key, v) {
     return {
-        [searchTypes.STREET]: encodedValue => `&StoredQuery_ID=findeStrasse&strassenname=${encodedValue}`,
-        [searchTypes.DISTRICT]: encodedValue => `&StoredQuery_ID=findeStadtteil&stadtteilname=${encodedValue}`,
-        [searchTypes.PARCEL]: encodedValue => `&StoredQuery_ID=Flurstueck&gemarkung=${encodedValue[0]}&flurstuecksnummer=${encodedValue[1]}`,
-        [searchTypes.STREET_KEY]: encodedValue => `&StoredQuery_ID=findeStrassenSchluessel&strassenschluessel=${encodedValue}`,
-        [searchTypes.ADDRESS_AFFIXED]: encodedValue => `&StoredQuery_ID=AdresseMitZusatz&strassenname=${encodedValue[0]}&hausnummer=${encodedValue[1]}&zusatz=${encodedValue[2]}`,
-        [searchTypes.ADDRESS_UNAFFIXED]: encodedValue => `&StoredQuery_ID=AdresseOhneZusatz&strassenname=${encodedValue[0]}&hausnummer=${encodedValue[1]}`,
-        [searchTypes.HOUSE_NUMBERS_FOR_STREET]: encodedValue => `&StoredQuery_ID=HausnummernZuStrasse&strassenname=${encodedValue}`
+        [searchTypes.STREET]: encodedValue =>
+            `&StoredQuery_ID=findeStrasse&strassenname=${encodedValue}`,
+        [searchTypes.DISTRICT]: encodedValue =>
+            `&StoredQuery_ID=findeStadtteil&stadtteilname=${encodedValue}`,
+        [searchTypes.PARCEL]: encodedValue =>
+            `&StoredQuery_ID=Flurstueck&gemarkung=${encodedValue[0]}&flurstuecksnummer=${encodedValue[1]}`,
+        [searchTypes.STREET_KEY]: encodedValue =>
+            `&StoredQuery_ID=findeStrassenSchluessel&strassenschluessel=${encodedValue}`,
+        [searchTypes.ADDRESS_AFFIXED]: encodedValue =>
+            `&StoredQuery_ID=AdresseMitZusatz&strassenname=${encodedValue[0]}&hausnummer=${encodedValue[1]}&zusatz=${encodedValue[2]}`,
+        [searchTypes.ADDRESS_UNAFFIXED]: encodedValue =>
+            `&StoredQuery_ID=AdresseOhneZusatz&strassenname=${encodedValue[0]}&hausnummer=${encodedValue[1]}`,
+        [searchTypes.HOUSE_NUMBERS_FOR_STREET]: encodedValue =>
+            `&StoredQuery_ID=HausnummernZuStrasse&strassenname=${encodedValue}`
     }[key](encode(v));
 }
 
@@ -40,15 +47,15 @@ export function getIdQuery (key, v) {
  * @returns {Promise<string>} xhr response text
  * @ignore
  */
-export function searchGazetteer (key, value) {
+export function searchGazetteer(key, value) {
     return new Promise((resolve, reject) => {
         const url = getGazetteerUrl() + featureQuery + getIdQuery(key, value),
             xhr = new XMLHttpRequest();
 
-        xhr.timeout = 6000;
         xhr.onload = () => resolve(xhr.responseText);
-        xhr.onerror = (e) => reject(e);
+        xhr.onerror = e => reject(e);
         xhr.open("GET", url);
+        xhr.timeout = 6000;
         xhr.send();
     });
 }
