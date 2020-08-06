@@ -12,7 +12,7 @@
     "type": "git",
     "url": "https://bitbucket.org/geowerkstatt-hamburg/masterportalapi.git"
   },
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "jest .test.js --config ./jest.config.js --collectCoverage",
     "test:watch": "jest .test.js --config ./jest.config.js --watch",
